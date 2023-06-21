@@ -1,0 +1,78 @@
+package com.example.demo;
+
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatchlogs.CloudWatchLogsClient;
+import software.amazon.awssdk.services.cloudwatchlogs.model.*;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+@SpringBootApplication
+@RestController
+public class DemoApplication {
+	
+    private final CloudWatchLogsClient logsClient;
+    private final String logGroupName;
+
+    public DemoApplication() {
+        this.logsClient = CloudWatchLogsClient.builder().region(Region.US_EAST_1).build();
+        this.logGroupName = "Test";
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+
+    @PostMapping("/api/log")
+    public void receiveLogMessage(@RequestBody LogMessage logMessage) {
+        System.out.println("Received log message: " + logMessage.getMessage());
+        logToCloudWatch(logMessage.getMessage());
+    }
+
+    private void logToCloudWatch(String message) {
+        String logStreamName = String.valueOf(System.currentTimeMillis());
+
+        try {
+            CreateLogGroupRequest createLogGroupRequest = CreateLogGroupRequest.builder()
+                    .logGroupName(logGroupName)
+                    .build(); //this is specify the name of the log group to be created in logs
+            logsClient.createLogGroup(createLogGroupRequest);
+
+            CreateLogStreamRequest createLogStreamRequest = CreateLogStreamRequest.builder()
+                    .logGroupName(logGroupName)
+                    .logStreamName(logStreamName)
+                    .build();
+            logsClient.createLogStream(createLogStreamRequest);
+
+            PutLogEventsRequest putLogEventsRequest = PutLogEventsRequest.builder()
+                    .logGroupName(logGroupName)
+                    .logStreamName(logStreamName)
+                    .logEvents(InputLogEvent.builder()
+                            .timestamp(System.currentTimeMillis())
+                            .message(message)
+                            .build())
+                    .build();
+            logsClient.putLogEvents(putLogEventsRequest);
+
+            System.out.println("Log message sent to CloudWatch Logs");
+        } catch (CloudWatchLogsException e) {
+            // Handle the exception
+            e.printStackTrace();
+        }
+    }
+
+    public static class LogMessage {
+        private String message;
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+    }
+}

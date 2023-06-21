@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>S3 Images</title>
+  <style>
+    .image-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    
+    .image-container {
+      width: 30%;
+      height: 200px; 
+      margin-bottom: 20px;
+      text-align: center;
+      overflow: hidden; 
+    }
+    
+    .image-container img {
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; 
+    }
+  </style>
+</head>
+<body>
+  <% images.forEach(function(image, index) { %>
+    <% if (index % 3 === 0) { %>
+      <div class="image-row">
+    <% } %>
+    
+    <div class="image-container">
+      <h3><%= image.name %></h3>
+      <img src="<%= image.url %>" alt="<%= image.name %>">
+    </div>
+    
+    <% if ((index + 1) % 3 === 0 || index === images.length - 1) { %>
+      </div>
+    <% } %>
+  <% }) %>
+</body>
+</html>

@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - java
+    networks:
+      - mynetwork
+
+  java:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile
+    volumes:
+      - ./demo:/app
+    ports:
+      - 8080:8080
+    networks:
+      - mynetwork
+    environment:
+      - AWS_ACCESS_KEY_ID= AKIASKNWGTBDAYPAOSKO
+      - AWS_SECRET_ACCESS_KEY= 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
+
+networks:
+  mynetwork:
